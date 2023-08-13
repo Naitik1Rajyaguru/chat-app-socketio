@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div id="header">
+    <h1>Message App : {{chatroom}}</h1>
+  </div>
+<div id="container">
+  <div id="message-box">
+    <input type="text" id="message" placeholder="Enter your message" name= "Message">
+    <button id="send-button" onClick="send_massage()" name="send">Send</button>
+  </div>
+  <ul id="message-list"></ul>
+</div>
+<script type="text/javascript">
+  var socketio = io();    // we have import js for socket that is why we are using this :- this is creating kind of socket..
+
+  const messageInput = document.getElementById("message");
+  const sendButton = document.getElementById("send-button");
+  const messageList = document.getElementById("message-list");
+
+  sendButton.addEventListener("click", () => {
+    userMessage = messageInput.value.trim();
+    if (userMessage == "") {
+      return
+    }
+    socketio.emit("get_message", {data: messageInput.value});
+    messageInput.value = "";
+  });
+
+  // display masage 
+  function displayMessage(name, message) {
+    const messageItem = document.createElement("li");
+    messageItem.textContent = `${name}: ${message}`;
+    messageList.appendChild(messageItem);
+  }
+
+  // this will be called on send in main.py (send is when we are message, we are passsing data here as well which will be jason object that we have created inside send in main.py)
+  socketio.on("message", (data)=>{
+    displayMessage(data.name, data.message);
+  });
+
+</script>
+
+
+ {% comment %} this is for when we refresh we dont loose our previus chat {% endcomment %}
+{% for msg in messages %}
+<script>
+    displayMessage("{{msg.name}}", "{{msg.message}}")  // we have name and message in messages
+</script>
+
+{% endfor %}
+
+
+
+
+
+{% endblock %}
